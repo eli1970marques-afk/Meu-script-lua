@@ -1,0 +1,161 @@
+--// Astro Hub By Kelvismatos2 //--
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local Debris = game:GetService("Debris")
+local TweenService = game:GetService("TweenService")
+local StarterGui = game:GetService("StarterGui")
+local SoundService = game:GetService("SoundService")
+
+-- GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Parent = ScreenGui
+MainFrame.Size = UDim2.new(0, 0, 0, 0) -- começa pequeno
+MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0) -- centralizado
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.BackgroundTransparency = 1 -- começa invisível
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 20)
+UICorner.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Parent = MainFrame
+Title.Size = UDim2.new(1, 0, 0.2, 0)
+Title.Text = "✨ Astro Hub ✨\nBem-vindo!\nBy Kelvismatos2"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.BackgroundTransparency = 1
+Title.TextTransparency = 1
+Title.TextScaled = true
+Title.Font = Enum.Font.GothamBold
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Parent = MainFrame
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -35, 0, 5)
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 0, 0)
+CloseButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+CloseButton.BackgroundTransparency = 1
+CloseButton.TextTransparency = 1
+CloseButton.Font = Enum.Font.GothamBold
+
+-- Hover efeito no botão X
+CloseButton.MouseEnter:Connect(function()
+    TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80,0,0)}):Play()
+end)
+CloseButton.MouseLeave:Connect(function()
+    TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40,40,40)}):Play()
+end)
+
+-- Animação de saída ao fechar
+CloseButton.MouseButton1Click:Connect(function()
+    local fadeOut = TweenService:Create(MainFrame, TweenInfo.new(0.5), {
+        Size = UDim2.new(0, 0, 0, 0),
+        BackgroundTransparency = 1
+    })
+    fadeOut:Play()
+    fadeOut.Completed:Wait()
+    ScreenGui:Destroy()
+end)
+
+-- Texto de inspiração
+local Insp = Instance.new("TextLabel", MainFrame)
+Insp.Size = UDim2.new(1, 0, 0.1, 0)
+Insp.Position = UDim2.new(0,0,1,-20)
+Insp.Text = "inspiração: cartola hub"
+Insp.TextColor3 = Color3.fromRGB(200,200,200)
+Insp.BackgroundTransparency = 1
+Insp.TextTransparency = 1
+Insp.TextScaled = true
+Insp.Font = Enum.Font.Gotham
+
+-- 🔥 Animação de entrada
+local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+local grow = TweenService:Create(MainFrame, tweenInfo, {
+    Size = UDim2.new(0, 400, 0, 300),
+    BackgroundTransparency = 0
+})
+local textFade = TweenService:Create(Title, TweenInfo.new(1), {TextTransparency = 0})
+local buttonFade = TweenService:Create(CloseButton, TweenInfo.new(1), {
+    BackgroundTransparency = 0,
+    TextTransparency = 0
+})
+local inspFade = TweenService:Create(Insp, TweenInfo.new(1), {TextTransparency = 0})
+
+-- Efeito sonoro de abertura
+local sound = Instance.new("Sound", SoundService)
+sound.SoundId = "rbxassetid://9118823104" -- som suave
+sound.Volume = 1
+sound:Play()
+Debris:AddItem(sound, 5)
+
+grow:Play()
+textFade:Play()
+buttonFade:Play()
+inspFade:Play()
+
+-- Notificação de boas-vindas
+StarterGui:SetCore("SendNotification", {
+    Title = "Astro Hub ✨",
+    Text = "Bem-vindo, "..LocalPlayer.Name.."!",
+    Duration = 5
+})
+
+-- Função de pegar player por nome
+local function getPlayer(name)
+    for _,plr in pairs(Players:GetPlayers()) do
+        if plr.Name:lower():sub(1,#name) == name:lower() then
+            return plr
+        end
+    end
+end
+
+-- Controle de spin
+local spinning = false
+
+-- Sistema de comandos
+LocalPlayer.Chatted:Connect(function(msg)
+    if string.sub(msg,1,1) == ";" then
+        local args = string.split(string.sub(msg,2), " ")
+        local cmd = args[1]
+        local target = args[2]
+
+        if cmd == "speed" then
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.WalkSpeed = 100
+            end
+
+        elseif cmd == "jump" then
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.JumpPower = 150
+            end
+
+        elseif cmd == "spin" then
+            spinning = not spinning
+            task.spawn(function()
+                while spinning and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") do
+                    LocalPlayer.Character.HumanoidRootPart.CFrame *= CFrame.Angles(0, math.rad(30), 0)
+                    task.wait(0.1)
+                end
+            end)
+
+        elseif cmd == "giant" then
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                LocalPlayer.Character.HumanoidRootPart.Size = Vector3.new(10,10,10)
+            end
+
+        elseif cmd == "ban" and target then
+            local plr = getPlayer(target)
+            if plr then plr:Kick("Banido pelo Astro Hub 🔨") end
+
+        elseif cmd == "kick" and target then
+            local plr = getPlayer(target)
+            if plr then plr:Kick("Expulso, mas pode voltar.") end
+
+        elseif cmd == "tp" and target
