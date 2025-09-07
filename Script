@@ -1,0 +1,174 @@
+--// Astro Hub By Kelvismatos2 //--
+
+-- Tela de abertura
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
+local Title = Instance.new("TextLabel")
+local CloseButton = Instance.new("TextButton")
+local Drag = false
+
+ScreenGui.Parent = game.CoreGui
+MainFrame.Parent = ScreenGui
+MainFrame.Size = UDim2.new(0, 400, 0, 300)
+MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+UICorner.CornerRadius = UDim.new(0, 20)
+UICorner.Parent = MainFrame
+
+Title.Parent = MainFrame
+Title.Size = UDim2.new(1, 0, 0.2, 0)
+Title.Text = "✨ Astro Hub ✨\nBem-vindo!\nBy Kelvismatos2"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.BackgroundTransparency = 1
+Title.TextScaled = true
+
+CloseButton.Parent = MainFrame
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -35, 0, 5)
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 0, 0)
+CloseButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+-- Texto de inspiração
+local Insp = Instance.new("TextLabel", MainFrame)
+Insp.Size = UDim2.new(1, 0, 0.1, 0)
+Insp.Position = UDim2.new(0,0,1,-20)
+Insp.Text = "inspiração: cartola hub"
+Insp.TextColor3 = Color3.fromRGB(200,200,200)
+Insp.BackgroundTransparency = 1
+Insp.TextScaled = true
+
+-- Função para mover com a tecla L
+local UserInputService = game:GetService("UserInputService")
+local dragging = false
+local dragInput, dragStart, startPos
+
+UserInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.L then
+        dragging = true
+        dragStart = UserInputService:GetMouseLocation()
+        startPos = MainFrame.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.L then
+        dragging = false
+    end
+end)
+
+-- Sistema de comandos
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local function getPlayer(name)
+    for _,plr in pairs(Players:GetPlayers()) do
+        if plr.Name:lower():sub(1,#name) == name:lower() then
+            return plr
+        end
+    end
+end
+
+Players.LocalPlayer.Chatted:Connect(function(msg)
+    if string.sub(msg,1,1) == ";" then
+        local args = string.split(string.sub(msg,2), " ")
+        local cmd = args[1]
+        local target = args[2]
+
+        if cmd == "speed" then
+            LocalPlayer.Character.Humanoid.WalkSpeed = 100
+        elseif cmd == "jump" then
+            LocalPlayer.Character.Humanoid.JumpPower = 150
+        elseif cmd == "spin" then
+            spawn(function()
+                while true do
+                    LocalPlayer.Character.HumanoidRootPart.CFrame *= CFrame.Angles(0,math.rad(30),0)
+                    task.wait(0.1)
+                end
+            end)
+        elseif cmd == "giant" then
+            LocalPlayer.Character.HumanoidRootPart.Size = Vector3.new(10,10,10)
+        elseif cmd == "ban" and target then
+            local plr = getPlayer(target)
+            if plr then plr:Kick("Banido pelo Astro Hub 🔨") end
+        elseif cmd == "kick" and target then
+            local plr = getPlayer(target)
+            if plr then plr:Kick("Expulso, mas pode voltar.") end
+        elseif cmd == "tp" and target then
+            local plr = getPlayer(target)
+            if plr and plr.Character then
+                plr.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame
+            end
+        elseif cmd == "jail" and target then
+            local plr = getPlayer(target)
+            if plr and plr.Character then
+                local char = plr.Character
+                char.HumanoidRootPart.Anchored = true
+                plr.PlayerGui.ResetButton.Visible = false
+                task.delay(100, function()
+                    if char and char:FindFirstChild("HumanoidRootPart") then
+                        char.HumanoidRootPart.Anchored = false
+                    end
+                    pcall(function() plr.PlayerGui.ResetButton.Visible = true end)
+                end)
+            end
+        elseif cmd == "block" and target then
+            local plr = getPlayer(target)
+            if plr and plr.Character then
+                local char = plr.Character
+                char.HumanoidRootPart.Anchored = true
+                local block = Instance.new("Part", workspace)
+                block.Size = Vector3.new(6,6,6)
+                block.Position = char.HumanoidRootPart.Position
+                block.Anchored = true
+                block.CanCollide = true
+                plr.PlayerGui.ResetButton.Visible = false
+                task.delay(100, function()
+                    if char and char:FindFirstChild("HumanoidRootPart") then
+                        char.HumanoidRootPart.Anchored = false
+                    end
+                    pcall(function() plr.PlayerGui.ResetButton.Visible = true end)
+                    block:Destroy()
+                end)
+            end
+        elseif cmd == "brainrot" and target then
+            -- Exemplo simples: cria um modelo "brainrot"
+            local model = Instance.new("Part", workspace)
+            model.Size = Vector3.new(5,5,5)
+            model.Position = LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(0,5,0)
+            model.BrickColor = BrickColor.new("Bright red")
+            model.Name = target
+        end
+    end
+end)
+
+-- Exclusivo Brookhaven: Gamepass Free
+if game.PlaceId == 4924922222 then -- ID do Brookhaven
+    local GPButton = Instance.new("TextButton", MainFrame)
+    GPButton.Size = UDim2.new(0.8, 0, 0.15, 0)
+    GPButton.Position = UDim2.new(0.1,0,0.75,0)
+    GPButton.Text = "Gamepass Free"
+    GPButton.BackgroundColor3 = Color3.fromRGB(0,170,255)
+    GPButton.TextScaled = true
+    GPButton.MouseButton1Click:Connect(function()
+        for i,v in pairs(LocalPlayer.GamePasses:GetChildren()) do
+            v.Value = true
+        end
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Astro Hub",
+            Text = "✅ Todas as gamepasses liberadas!",
+            Duration = 5
+        })
+    end)
+end
